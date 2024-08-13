@@ -20,7 +20,13 @@ You should return in the following JSON format:
 
 
 export async function POST(req) {
-  const openai = new OpenAI()
+    const apiKey = process.env.OPENAI_API_KEY;
+    
+    if (!apiKey) {
+    return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 });
+  }
+
+  const openai = new OpenAI({ apiKey });
     const data = await req.text()
     
  // We'll implement the OpenAI API call here
