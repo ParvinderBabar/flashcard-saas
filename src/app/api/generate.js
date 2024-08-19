@@ -1,12 +1,9 @@
-import { NextResponse } from 'next/server'
-import OpenAI from 'openai'
-
-// Your fetcher function for SWR
-const fetcher = (url) => fetch(url).then((res) => res.json());
+import { NextResponse } from 'next/server';
+import OpenAI from 'openai';
 
 const systemPrompt = `
 You are a flashcard creator, you take in text and create multiple flashcards from it. Make sure to create exactly 10 flashcards.
-Both front and back should be one sentence long.
+Both front and back should be one sentence long. don't give any other text data just give me the json flashcards that's all
 You should return in the following JSON format:
 {
   "flashcards":[
@@ -18,31 +15,25 @@ You should return in the following JSON format:
 }
 `
 
-
 export async function POST(req) {
-    const apiKey = process.env.OPENAI_API_KEY;
-    
-    if (!apiKey) {
-    return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 });
-  }
+  const data = await req.text();
+  console.log('Request data:', data);
 
-  const openai = new OpenAI({ apiKey });
-    const data = await req.text()
-    
- // We'll implement the OpenAI API call here
+  const openai = new OpenAI({
+    baseURL: "https://openrouter.ai/api/v1",
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+
   const completion = await openai.chat.completions.create({
+    model: "meta-llama/llama-3-8b-instruct:free",
     messages: [
-      { role: 'system', content: systemPrompt },
+      { role: "system", content: systemPrompt },
       { role: 'user', content: data },
     ],
-    model: 'gpt-4o',
-    response_format: { type: 'json_object' },
-  })
+  });
 
-    // We'll process the API response in the next step
-    //  Parse the JSON response from the OpenAI API
+  const responseBody = completion.choices[0].message.content;
+  console.log('Raw response body:', responseBody);
   const flashcards = JSON.parse(completion.choices[0].message.content)
-
-  // Return the flashcards as a JSON response
   return NextResponse.json(flashcards.flashcards)
 }

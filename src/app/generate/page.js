@@ -23,29 +23,62 @@ export default function Generate() {
   const [setName, setSetName] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
 
+  // const handleSubmit = async () => {
+  //   if (!text.trim()) {
+  //     alert('Please enter some text to generate flashcards.')
+  //     return
+  //   }
+
+  //   try {
+  //     const response = await fetch('/api/generate', {
+  //       method: 'POST',
+  //       body: text,
+  //     })
+
+  //     if (!response.ok) {
+  //       throw new Error('Failed to generate flashcards')
+  //     }
+
+  //     const data = await response.json()
+  //     setFlashcards(data)
+  //   } catch (error) {
+  //     console.error('Error generating flashcards:', error)
+  //     alert('An error occurred while generating flashcards. Please try again.')
+  //   }
+  // }
   const handleSubmit = async () => {
-    if (!text.trim()) {
-      alert('Please enter some text to generate flashcards.')
-      return
-    }
-
-    try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        body: text,
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to generate flashcards')
-      }
-
-      const data = await response.json()
-      setFlashcards(data)
-    } catch (error) {
-      console.error('Error generating flashcards:', error)
-      alert('An error occurred while generating flashcards. Please try again.')
-    }
+  if (!text.trim()) {
+    alert("Please enter some text to generate flashcards.");
+    return;
   }
+
+  try {
+    const response = await fetch("/api/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text }), // Send the text as JSON
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to generate flashcards");
+    }
+
+    const data = await response.json();
+    console.log("Generated flashcards:", data);
+
+    if (Array.isArray(data) && data.length > 0) {
+      setFlashcards(data);
+    } else {
+      console.error("Unexpected data format:", data);
+      alert("Failed to generate flashcards. Please try again.");
+    }
+  } catch (error) {
+    console.error("Error generating flashcards:", error);
+    alert("An error occurred while generating flashcards. Please try again.");
+  }
+};
 
   const handleOpenDialog = () => setDialogOpen(true)
   const handleCloseDialog = () => setDialogOpen(false)
